@@ -1,0 +1,83 @@
+#
+# Description
+# -----------
+# This table stores the items in the tenants puzzle library.
+#
+# Fields
+# ------
+# id:                   The ID assigned to the record.
+# uuid:                 The Universal Unique ID.
+# tnid:                 The Tenant ID the record belongs to.
+#
+# name:                 The name of the item.
+# permalink:            The permalink for the item.
+#
+# status:               The current status of the item
+#                           20 - In Library
+#                           40 - On loan
+#                           70 - Lost
+#                           80 - Sold
+#                           90 - Archived
+#
+# flags:                The options for the item.
+#                           0x01 - Visible on website
+#                           0x02 - Loaner (otherwise in personal collection to not be loaned out)
+#                           0x04 - Trusted Loaner (only available to trusted customers) **future**
+#                           0x08 - For Sale (can also be a loaner) **future**
+#
+# pieces:               The number of pieces in the puzzle.
+# length:               The length of the puzzle in millimeters.
+# width:                The width of the puzzle in millimeters.
+#
+# difficulty:           The difficulty of the item. **future**
+#                           10 - easy
+#                           20 - medium
+#                           30 - hard
+#                           40 - very hard
+#                           50 - impossible
+#
+# primary_image_id:     The main image for the item.
+#
+# synopsis:             The overview of the item.
+# description:          The full description of the item.
+#
+# owner_customer_id:    The ID of the customer who currently owns this item.
+# current_customer_id:  The ID of the customer who currently has the item. This is the person who borrowed the item.
+#
+# paid_amount:          The amount paid for the puzzle. **future**
+# unit_amount:          The price of the puzzle. **future**
+#
+# notes:                The private notes for the library owner.
+#
+# date_added:           The UTC date and time the record was added.
+# last_updated:         The UTC date and time the record was last update.
+#
+create table ciniki_puzzlelibrary_items (
+    id int not null auto_increment,
+    uuid char(36) not null,
+    tnid int not null,
+
+    name varchar(250) not null,
+    permalink varchar(250) not null,
+
+    status tinyint unsigned not null,
+    flags tinyint unsigned not null,
+    pieces int not null,
+    length decimal(10,2) not null,
+    width decimal(10,2) not null,
+    difficulty tinyint unsigned not null,
+
+    primary_image_id int not null,
+    description varchar(1000) not null,
+    owner_customer_id int not null,
+    current_customer_id int not null,
+    paid_amount decimal(19,4) not null,
+    unit_amount decimal(19,4) not null,
+    notes varchar(1000) not null,
+
+    date_added datetime not null,
+    last_updated datetime not null,
+    primary key (id),
+    unique index (uuid),
+    index sync (tnid, uuid, last_updated)
+) ENGINE='InnoDB', COMMENT='v1.01';
