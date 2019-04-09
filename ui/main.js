@@ -123,10 +123,10 @@ function ciniki_puzzlelibrary_main() {
              },
         }},
         '_description':{'label':'Description', 'fields':{
-            'description':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'small'},
+            'description':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'medium'},
             }},
         '_notes':{'label':'Notes', 'fields':{
-            'notes':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'small'},
+            'notes':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'medium'},
             }},
         '_buttons':{'label':'', 'buttons':{
             'save':{'label':'Save', 'fn':'M.ciniki_puzzlelibrary_main.item.save();'},
