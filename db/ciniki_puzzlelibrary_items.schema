@@ -41,8 +41,8 @@
 # synopsis:             The overview of the item.
 # description:          The full description of the item.
 #
-# owner_customer_id:    The ID of the customer who currently owns this item.
-# current_customer_id:  The ID of the customer who currently has the item. This is the person who borrowed the item.
+# owner:                The current owner of the puzzle.
+# holder:               The current holder of the puzzle, used to track who it's been lent to.
 #
 # paid_amount:          The amount paid for the puzzle. **future**
 # unit_amount:          The price of the puzzle. **future**
@@ -69,8 +69,8 @@ create table ciniki_puzzlelibrary_items (
 
     primary_image_id int not null,
     description varchar(1000) not null,
-    owner_customer_id int not null,
-    current_customer_id int not null,
+    owner varchar(150) not null,
+    holder varchar(150) not null,
     paid_amount decimal(19,4) not null,
     unit_amount decimal(19,4) not null,
     notes varchar(1000) not null,

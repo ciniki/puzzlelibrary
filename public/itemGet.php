@@ -68,8 +68,8 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
             'difficulty'=>'0',
             'primary_image_id'=>'',
             'description'=>'',
-            'owner_customer_id'=>'0',
-            'current_customer_id'=>'0',
+            'owner'=>'',
+            'holder'=>'',
             'paid_amount'=>'0',
             'unit_amount'=>'0',
             'notes'=>'',
@@ -91,8 +91,8 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
             . "ciniki_puzzlelibrary_items.difficulty, "
             . "ciniki_puzzlelibrary_items.primary_image_id, "
             . "ciniki_puzzlelibrary_items.description, "
-            . "ciniki_puzzlelibrary_items.owner_customer_id, "
-            . "ciniki_puzzlelibrary_items.current_customer_id, "
+            . "ciniki_puzzlelibrary_items.owner, "
+            . "ciniki_puzzlelibrary_items.holder, "
             . "ciniki_puzzlelibrary_items.paid_amount, "
             . "ciniki_puzzlelibrary_items.unit_amount, "
             . "ciniki_puzzlelibrary_items.notes "
@@ -103,7 +103,7 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
         ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
         $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
             array('container'=>'items', 'fname'=>'id', 
-                'fields'=>array('name', 'permalink', 'status', 'flags', 'pieces', 'length', 'width', 'difficulty', 'primary_image_id', 'description', 'owner_customer_id', 'current_customer_id', 'paid_amount', 'unit_amount', 'notes'),
+                'fields'=>array('name', 'permalink', 'status', 'flags', 'pieces', 'length', 'width', 'difficulty', 'primary_image_id', 'description', 'owner', 'holder', 'paid_amount', 'unit_amount', 'notes'),
                 ),
             ));
         if( $rc['stat'] != 'ok' ) {
@@ -113,6 +113,11 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
             return array('stat'=>'fail', 'err'=>array('code'=>'ciniki.puzzlelibrary.9', 'msg'=>'Unable to find Item'));
         }
         $item = $rc['items'][0];
+       
+        $item['length'] = (float)$item['length'];
+        $item['width'] = (float)$item['width'];
+        $item['paid_amount'] = ($item['paid_amount'] == 0 ? '' : (float)$item['paid_amount']);
+        $item['unit_amount'] = ($item['unit_amount'] == 0 ? '' : (float)$item['unit_amount']);
 
         //
         // Get the categories

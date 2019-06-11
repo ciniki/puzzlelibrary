@@ -47,8 +47,8 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         . "items.length, "
         . "items.width, "
         . "items.difficulty, "
-        . "items.owner_customer_id, "
-        . "items.current_customer_id, "
+        . "items.owner, "
+        . "items.holder, "
         . "items.paid_amount, "
         . "items.unit_amount, "
         . "brands.tag_name AS brand "
@@ -64,7 +64,7 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
     $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
         array('container'=>'items', 'fname'=>'id', 
             'fields'=>array('id', 'name', 'permalink', 'brand', 'status', 'flags', 'pieces', 
-                'length', 'width', 'difficulty', 'owner_customer_id', 'current_customer_id', 
+                'length', 'width', 'difficulty', 'owner', 'holder', 
                 'paid_amount', 'unit_amount'),
             'dlists'=>array('brand'=>','),
             ),

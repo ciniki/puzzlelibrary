@@ -27,8 +27,8 @@ function ciniki_puzzlelibrary_itemUpdate(&$ciniki) {
         'difficulty'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Difficulty'),
         'primary_image_id'=>array('required'=>'no', 'blank'=>'no', 'name'=>'Image'),
         'description'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Description'),
-        'owner_customer_id'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Owner'),
-        'current_customer_id'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Current Holder'),
+        'owner'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Owner'),
+        'holder'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Current Holder'),
         'paid_amount'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Amount Paid'),
         'unit_amount'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Sold Price'),
         'notes'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Notes'),
@@ -52,7 +52,6 @@ function ciniki_puzzlelibrary_itemUpdate(&$ciniki) {
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
-    error_log(print_r($args['brands'], true));
 
     if( isset($args['name']) ) {
         ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'makePermalink');
