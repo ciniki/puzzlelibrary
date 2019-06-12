@@ -126,6 +126,17 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
     } elseif( $args['module_page'] == 'ciniki.puzzlelibrary.artists' ) {
         $display = 'tag';
         $tag_type = 60;
+    } elseif( $args['module_page'] == 'ciniki.puzzlelibrary.latest' ) {
+        $display = 'latest';
+        $tag_type = 0;
+    } elseif( $args['module_page'] == 'ciniki.puzzlelibrary.sizes' ) {
+        $display = 'sizes';
+        $tag_type = 0;
+        if( isset($uri_split[0]) && $uri_split[0] != '' ) {
+            $size_permalink = $uri_split[0];
+            array_shift($uri_split);
+            $display = 'size';
+        }
     } else {
         return array('stat'=>'404', 'err'=>array('code'=>'ciniki.puzzlelibrary.19', 'msg'=>'Page not found'));
     }
@@ -220,8 +231,45 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
     //
     // Show the list of items
     //
-    elseif( $display == 'items' ) {
-        if( $tag_type != 0 ) {
+    elseif( $display == 'items' || $display == 'latest' || $display == 'size' ) {
+        if( $display == 'latest' ) {
+            $strsql = "SELECT items.id, "
+                . "items.name, "
+                . "items.permalink, "
+                . "items.status, "
+                . "items.flags, "
+                . "items.pieces, "
+                . "items.length, "
+                . "items.width, "
+                . "items.primary_image_id, "
+                . "'yes' AS is_details, "
+                . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
+                . "FROM ciniki_puzzlelibrary_items AS items "
+                . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+                . "AND items.primary_image_id > 0 "
+                . "ORDER BY items.date_added DESC "
+                . "LIMIT 20 "
+                . "";
+        } elseif( $display == 'size' ) {
+            $strsql = "SELECT items.id, "
+                . "items.name, "
+                . "items.permalink, "
+                . "items.status, "
+                . "items.flags, "
+                . "items.pieces, "
+                . "items.length, "
+                . "items.width, "
+                . "items.primary_image_id, "
+                . "'yes' AS is_details, "
+                . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
+                . "FROM ciniki_puzzlelibrary_items AS items "
+                . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+                . "AND items.pieces = '" . ciniki_core_dbQuote($ciniki, $size_permalink) . "' "
+                . "AND items.primary_image_id > 0 "
+                . "ORDER BY items.name "
+                . "LIMIT 20 "
+                . "";
+        } elseif( $tag_type != 0 ) {
             $strsql = "SELECT items.id, "
                 . "items.name, "
                 . "items.permalink, "
@@ -232,7 +280,8 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "items.width, "
                 . "items.primary_image_id, "
                 . "items.description, "
-                . "'yes' AS is_details "
+                . "'yes' AS is_details, "
+                . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
                 . "FROM ciniki_puzzlelibrary_tags AS tags "
                 . "INNER JOIN ciniki_puzzlelibrary_items AS items ON ("
                     . "tags.item_id = items.id "
@@ -256,7 +305,8 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "items.length, "
                 . "items.width, "
                 . "items.primary_image_id, "
-                . "'yes' AS is_details "
+                . "'yes' AS is_details, "
+                . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
                 . "FROM ciniki_puzzlelibrary_items AS items "
                 . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
                 . "AND items.primary_image_id > 0 "
@@ -267,7 +317,7 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
         $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
             array('container'=>'items', 'fname'=>'id', 
                 'fields'=>array('id', 'name', 'permalink', 'status', 'flags',
-                    'pieces', 'length', 'width', 'image_id'=>'primary_image_id', 'is_details'),
+                    'pieces', 'length', 'width', 'image_id'=>'primary_image_id', 'is_details', 'date_added'),
                 ),
             ));
         if( $rc['stat'] != 'ok' ) {
@@ -289,6 +339,7 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
             } else {
                 $items[$iid]['synopsis'] .= "<br/><b>Status:</b> Not Available";
             }
+            $items[$iid]['synopsis'] .= '<br/><b>Added:</b> ' . $item['date_added'];
         }
 
         $page['blocks'][] = array('type'=>'imagelist', 'base_url'=>$base_url, 'image_width'=>300, 'noimage'=>'yes', 'list'=>$items);
@@ -330,7 +381,7 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
             if( $tag['image_id'] == 0 && isset($tag['items']) ) {
                 foreach($tag['items'] as $item) {
                     if( $item['image_id'] > 0 ) {
-                        $tag['image_id'] = $item['image_id'];
+                        $tags[$tid]['image_id'] = $item['image_id'];
                         break;
                     }
                 }
@@ -338,6 +389,45 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
         }
 
         $page['blocks'][] = array('type'=>'tagimages', 'base_url'=>$base_url, 'tags'=>$tags);
+    }
+    elseif( $display == 'sizes' ) {
+        //
+        // Get the sizes available
+        //
+        $strsql = "SELECT items.pieces, "
+            . "items.id AS item_id, "
+            . "items.primary_image_id "
+            . "FROM ciniki_puzzlelibrary_items AS items "
+            . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+            . "AND items.primary_image_id > 0 "
+            . "AND (items.flags&0x01) = 0x01 "      // Visible
+            . "ORDER BY items.pieces, items.date_added DESC "
+            . "";
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+        $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
+            array('container'=>'sizes', 'fname'=>'pieces', 
+                'fields'=>array('title'=>'pieces', 'permalink'=>'pieces', 'image_id'=>'primary_image_id'),
+                ),
+            array('container'=>'items', 'fname'=>'item_id', 
+                'fields'=>array('id'=>'item_id', 'image_id'=>'primary_image_id'),
+                ),
+            ));
+        if( $rc['stat'] != 'ok' ) {
+            return array('stat'=>'fail', 'err'=>array('code'=>'ciniki.puzzlelibrary.20', 'msg'=>'Unable to load tags', 'err'=>$rc['err']));
+        }
+        $sizes = isset($rc['sizes']) ? $rc['sizes'] : array();
+        foreach($sizes as $sid => $size) {
+            if( $size['image_id'] == 0 && isset($size['items']) ) {
+                foreach($size['items'] as $item) {
+                    if( $item['image_id'] > 0 ) {
+                        $sizes[$sid]['image_id'] = $item['image_id'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $page['blocks'][] = array('type'=>'tagimages', 'base_url'=>$base_url, 'tags'=>$sizes);
     }
 
 //    $page['blocks'][] = array('type'=>'content', 'html'=>'<pre>' . print_r($args, true) . "</pre>"); 

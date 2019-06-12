@@ -41,11 +41,13 @@ function ciniki_puzzlelibrary_hooks_webOptions(&$ciniki, $tnid, $args) {
 
 
     $options = array();
-	$pages['ciniki.puzzlelibrary'] = array('name'=>'Puzzle Library', 'options'=>$options);
-	$pages['ciniki.puzzlelibrary.categories'] = array('name'=>'Puzzle Library - Categories', 'options'=>$options);
-//	$pages['ciniki.puzzlelibrary.keywords'] = array('name'=>'Puzzle Library - Categories', 'options'=>$options);
-	$pages['ciniki.puzzlelibrary.brands'] = array('name'=>'Puzzle Library - Brands', 'options'=>$options);
-	$pages['ciniki.puzzlelibrary.artists'] = array('name'=>'Puzzle Library - Artists', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary'] = array('name'=>'Puzzle Library', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary.categories'] = array('name'=>'Puzzle Library - Categories', 'options'=>$options);
+//    $pages['ciniki.puzzlelibrary.keywords'] = array('name'=>'Puzzle Library - Categories', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary.brands'] = array('name'=>'Puzzle Library - Brands', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary.artists'] = array('name'=>'Puzzle Library - Artists', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary.latest'] = array('name'=>'Puzzle Library - Latest', 'options'=>$options);
+    $pages['ciniki.puzzlelibrary.sizes'] = array('name'=>'Puzzle Library - Sizes', 'options'=>$options);
 
     return array('stat'=>'ok', 'pages'=>$pages);
 }
