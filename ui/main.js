@@ -176,7 +176,7 @@ function ciniki_puzzlelibrary_main() {
     this.item.open = function(cb, iid, list) {
         if( iid != null ) { this.item_id = iid; }
         if( list != null ) { this.nplist = list; }
-        M.api.getJSONCb('ciniki.puzzlelibrary.itemGet', {'tnid':M.curTenantID, 'item_id':this.item_id}, function(rsp) {
+        M.api.getJSONCb('ciniki.puzzlelibrary.itemGet', {'tnid':M.curTenantID, 'item_id':this.item_id, 'category':M.ciniki_puzzlelibrary_main.menu.category, 'brand':M.ciniki_puzzlelibrary_main.menu.brand}, function(rsp) {
             if( rsp.stat != 'ok' ) {
                 M.api.err(rsp);
                 return false;

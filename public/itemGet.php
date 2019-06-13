@@ -22,6 +22,8 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
     $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
         'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'item_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Item'),
+        'category'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Category'),
+        'brand'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Brand'),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;
@@ -57,23 +59,66 @@ function ciniki_puzzlelibrary_itemGet($ciniki) {
     // Return default for new Item
     //
     if( $args['item_id'] == 0 ) {
+        //
+        // Get last item added
+        //
+        if( isset($args['brand']) && $args['brand'] != '' ) {
+            $strsql = "SELECT items.flags, "
+                . "tags.tag_name, "
+                . "items.pieces, "
+                . "items.length, "
+                . "items.width, "
+                . "items.description, "
+                . "items.owner, "
+                . "items.holder "
+                . "FROM ciniki_puzzlelibrary_tags AS tags "
+                . "INNER JOIN ciniki_puzzlelibrary_items AS items ON ("
+                    . "tags.item_id = items.id "
+                    . "AND items.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+                    . ") "
+                . "WHERE tags.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+                . "AND tags.tag_type = 50 "
+                . "AND tags.permalink = '" . ciniki_core_dbQuote($ciniki, $args['brand']) . "' "
+                . "ORDER BY items.date_added DESC "
+                . "LIMIT 1 "
+                . "";
+        } else {
+            $strsql = "SELECT * "
+                . "FROM ciniki_puzzlelibrary_items "
+                . "WHERE tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+                . "ORDER BY date_added DESC "
+                . "LIMIT 1 "
+                . "";
+        }
+        $rc = ciniki_core_dbHashQuery($ciniki, $strsql, 'ciniki.puzzlelibrary', 'item');
+        if( $rc['stat'] != 'ok' ) {
+            return array('stat'=>'fail', 'err'=>array('code'=>'ciniki.puzzlelibrary.22', 'msg'=>'Unable to load item', 'err'=>$rc['err']));
+        }
+        if( isset($rc['item']) ) {
+            $last_item = $rc['item'];
+        }
+        
         $item = array('id'=>0,
             'name'=>'',
             'permalink'=>'',
             'status'=>'20',
-            'flags'=>'0',
-            'pieces'=>'',
-            'length'=>'',
-            'width'=>'',
+            'flags'=>(isset($last_item['flags']) ? $last_item['flags'] : '0'),
+            'pieces'=>(isset($last_item['pieces']) ? $last_item['pieces'] : ''),
+            'length'=>(isset($last_item['length']) ? $last_item['length'] : ''),
+            'width'=>(isset($last_item['width']) ? $last_item['width'] : ''),
             'difficulty'=>'0',
             'primary_image_id'=>'',
-            'description'=>'',
-            'owner'=>'',
-            'holder'=>'',
+            'description'=>(isset($last_item['description']) ? $last_item['description'] : ''),
+            'owner'=>(isset($last_item['owner']) ? $last_item['owner'] : ''),
+            'holder'=>(isset($last_item['holder']) ? $last_item['holder'] : ''),
             'paid_amount'=>'0',
             'unit_amount'=>'0',
             'notes'=>'',
         );
+
+        if( isset($args['brand']) && $args['brand'] != '' && isset($last_item['tag_name']) ) {
+            $item['brands'] = $last_item['tag_name'];
+        }
     }
 
     //
