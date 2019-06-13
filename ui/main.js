@@ -5,7 +5,9 @@ function ciniki_puzzlelibrary_main() {
     //
     // The panel to list the item
     //
-    this.menu = new M.panel('item', 'ciniki_puzzlelibrary_main', 'menu', 'mc', 'medium', 'sectioned', 'ciniki.puzzlelibrary.main.menu');
+    this.menu = new M.panel('item', 'ciniki_puzzlelibrary_main', 'menu', 'mc', 'large narrowaside', 'sectioned', 'ciniki.puzzlelibrary.main.menu');
+    this.menu.category = '';
+    this.menu.brand = '';
     this.menu.data = {};
     this.menu.nplist = [];
     this.menu.sections = {
@@ -14,21 +16,23 @@ function ciniki_puzzlelibrary_main() {
             'noData':'No categories',
             'cellClasses':['', 'alignright'],
             }, */
-/*        'categories':{'label':'Categories', 'type':'simplegrid', 'aside':'yes', 'num_cols':2,
-            'visible':'no',
+        'categories':{'label':'Categories', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
             'noData':'No categories',
             'cellClasses':['', 'alignright'],
-            'editFn':{},
-            }, */
+            }, 
+        'brands':{'label':'Brands', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'noData':'No brands',
+            'cellClasses':['', 'alignright'],
+            }, 
         'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':1,
             'cellClasses':[''],
             'hint':'Search item',
             'noData':'No item found',
             },
-        'items':{'label':'Item', 'type':'simplegrid', 'num_cols':3,
-            'headerValues':['Brand', 'Title', 'Pieces'],
+        'items':{'label':'Items', 'type':'simplegrid', 'num_cols':5,
+            'headerValues':['Brand', 'Title', 'Pieces', 'Size', 'Status'],
             'sortable':'yes',
-            'sortTypes':['text', 'text', 'number'],
+            'sortTypes':['text', 'text', 'number', 'number', 'text'],
             'noData':'No item',
             'addTxt':'Add Item',
             'addFn':'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',0,null);'
@@ -47,22 +51,51 @@ function ciniki_puzzlelibrary_main() {
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
         return 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',\'' + d.id + '\');';
     }
+    this.menu.rowClass = function(s, i, d) {
+        if( s == 'categories' && this.category == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'brands' && this.brand == d.permalink ) {
+            return 'highlight';
+        }
+        return '';
+    }
     this.menu.cellValue = function(s, i, j, d) {
+        if( s == 'categories' || s == 'brands' ) {
+            return d.tag_name + '<span class="count">' + d.num_items + '</span>';
+        }
         if( s == 'items' ) {
             switch(j) {
                 case 0: return d.brand;
                 case 1: return d.name;
                 case 2: return d.pieces;
+                case 3: return d.length_width;
+                case 4: return d.status_text;
             }
         }
     }
     this.menu.rowFn = function(s, i, d) {
+        if( s == 'categories' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchCategory("' + M.eU(d.permalink) + '");';
+        }
+        if( s == 'brands' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchBrand("' + M.eU(d.permalink) + '");';
+        }
         if( s == 'items' ) {
             return 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',\'' + d.id + '\',M.ciniki_puzzlelibrary_main.item.nplist);';
         }
     }
+    this.menu.switchCategory = function(c) {
+        this.category = c;
+        this.brand = '';
+        this.open();
+    }
+    this.menu.switchBrand = function(b) {
+        this.brand = b;
+        this.category = '';
+        this.open();
+    }
     this.menu.open = function(cb) {
-        M.api.getJSONCb('ciniki.puzzlelibrary.itemList', {'tnid':M.curTenantID}, function(rsp) {
+        M.api.getJSONCb('ciniki.puzzlelibrary.itemList', {'tnid':M.curTenantID, 'category':this.category, 'brand':this.brand}, function(rsp) {
             if( rsp.stat != 'ok' ) {
                 M.api.err(rsp);
                 return false;
@@ -74,6 +107,7 @@ function ciniki_puzzlelibrary_main() {
             p.show(cb);
         });
     }
+    this.menu.addButton('add', 'Add', 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',0,null);');
     this.menu.addClose('Back');
 
     //

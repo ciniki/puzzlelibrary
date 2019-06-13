@@ -16,7 +16,11 @@ function ciniki_puzzlelibrary_maps(&$ciniki) {
     //
     $maps = array();
     $maps['item'] = array('status'=>array(
-        '10'=>'Private',
+        '20'=>'In Library',
+        '40'=>'On load',
+        '70'=>'Lost',
+        '80'=>'Sold',
+        '90'=>'Archived',
     ));
     //
     return array('stat'=>'ok', 'maps'=>$maps);
