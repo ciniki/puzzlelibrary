@@ -30,9 +30,10 @@ function ciniki_puzzlelibrary_main() {
             'noData':'No item found',
             },
         'items':{'label':'Items', 'type':'simplegrid', 'num_cols':5,
-            'headerValues':['Brand', 'Title', 'Pieces', 'Size', 'Status'],
+            'headerValues':['Brand', 'Title', 'Pieces/Size', 'Status', 'Location'],
+            'cellClasses':['', '', 'multiline', 'multiline', 'multiline'],
             'sortable':'yes',
-            'sortTypes':['text', 'text', 'number', 'number', 'text'],
+            'sortTypes':['text', 'text', 'number', 'text', 'text'],
             'noData':'No item',
             'addTxt':'Add Item',
             'addFn':'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',0,null);'
@@ -67,9 +68,9 @@ function ciniki_puzzlelibrary_main() {
             switch(j) {
                 case 0: return d.brand;
                 case 1: return d.name;
-                case 2: return d.pieces;
-                case 3: return d.length_width;
-                case 4: return d.status_text;
+                case 2: return '<span class="maintext">' + d.pieces + '</span><span class="subtext">' + d.length_width + '</span>';
+                case 3: return '<span class="maintext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + '</span><span class="subtext">' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + '</span>';
+                case 4: return '<span class="maintext">' + d.status_text + '</span><span class="subtext">' + d.holder + '</span>';
             }
         }
     }

@@ -154,6 +154,13 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         foreach($items as $iid => $item) {
             $item_ids[] = $item['id'];
             $items[$iid]['length_width'] = (int)($item['length']/10) . 'x' . (int)($item['width']/10);
+            $items[$iid]['flags_text'] = '';
+            if( ($item['flags']&0x01) == 0x01 ) {
+                $items[$iid]['flags_text'] .= 'Visible';
+            }
+            if( ($item['flags']&0x02) == 0x02 ) {
+                $items[$iid]['flags_text'] .= ($items[$iid]['flags_text'] != '' ? ', ' : '') . 'Loaner';
+            }
         }
     } else {
         $items = array();
