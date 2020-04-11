@@ -134,6 +134,7 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
         $tag_type = 0;
         if( isset($uri_split[0]) && $uri_split[0] != '' ) {
             $size_permalink = $uri_split[0];
+            $base_url .= '/' . $size_permalink;
             array_shift($uri_split);
             $display = 'size';
         }
@@ -242,10 +243,12 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "items.length, "
                 . "items.width, "
                 . "items.primary_image_id, "
+                . "items.description, "
                 . "'yes' AS is_details, "
                 . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
                 . "FROM ciniki_puzzlelibrary_items AS items "
                 . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+                . "AND (items.flags&0x01) = 0x01 "      // Visible
                 . "AND items.primary_image_id > 0 "
                 . "ORDER BY items.date_added DESC "
                 . "LIMIT 20 "
@@ -260,10 +263,12 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "items.length, "
                 . "items.width, "
                 . "items.primary_image_id, "
+                . "items.description, "
                 . "'yes' AS is_details, "
                 . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
                 . "FROM ciniki_puzzlelibrary_items AS items "
                 . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+                . "AND (items.flags&0x01) = 0x01 "      // Visible
                 . "AND items.pieces = '" . ciniki_core_dbQuote($ciniki, $size_permalink) . "' "
                 . "AND items.primary_image_id > 0 "
                 . "ORDER BY items.name "
@@ -305,10 +310,12 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "items.length, "
                 . "items.width, "
                 . "items.primary_image_id, "
+                . "items.description, "
                 . "'yes' AS is_details, "
                 . "DATE_FORMAT(items.date_added, '%M %d, %Y') AS date_added "
                 . "FROM ciniki_puzzlelibrary_items AS items "
                 . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $tnid) . "' "
+                . "AND (items.flags&0x01) = 0x01 "      // Visible
                 . "AND items.primary_image_id > 0 "
                 . "ORDER BY items.pieces ASC, items.date_added DESC "
                 . "";
@@ -317,7 +324,7 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
         $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
             array('container'=>'items', 'fname'=>'id', 
                 'fields'=>array('id', 'name', 'permalink', 'status', 'flags',
-                    'pieces', 'length', 'width', 'image_id'=>'primary_image_id', 'is_details', 'date_added'),
+                    'pieces', 'length', 'width', 'image_id'=>'primary_image_id', 'description', 'is_details', 'date_added'),
                 ),
             ));
         if( $rc['stat'] != 'ok' ) {
@@ -330,16 +337,20 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
         //
         foreach($items as $iid => $item) {
             $items[$iid]['name'] .= ' (' . $item['pieces'] . ')';
-            $items[$iid]['synopsis'] = '<b>Size:</b> ' . (float)($item['length']/10) . ' x ' . (float)($item['width']/10) . ' cm'
-                . ' (' . (number_format($item['length']*0.03937, 0)) . ' x ' . (number_format($item['width']*0.03937, 0)) . ' inches)';
+            $items[$iid]['synopsis'] = '';
             if( $item['status'] == 20 && ($item['flags']&0x02) == 0x02 ) {
-                $items[$iid]['synopsis'] .= "<br/><b>Status:</b> Available";
+                $items[$iid]['synopsis'] .= "<b>Status:</b> Available";
             } elseif( $item['status'] == 40 ) {
-                $items[$iid]['synopsis'] .= "<br/><b>Status:</b> On Loan";
+                $items[$iid]['synopsis'] .= "<b>Status:</b> On Loan";
             } else {
-                $items[$iid]['synopsis'] .= "<br/><b>Status:</b> Not Available";
+                $items[$iid]['synopsis'] .= "<b>Status:</b> Not Available";
             }
+            $items[$iid]['synopsis'] .= '<br/><b>Size:</b> ' . (float)($item['length']/10) . ' x ' . (float)($item['width']/10) . ' cm'
+                . ' (' . (number_format($item['length']*0.03937, 0)) . ' x ' . (number_format($item['width']*0.03937, 0)) . ' inches)';
             $items[$iid]['synopsis'] .= '<br/><b>Added:</b> ' . $item['date_added'];
+            if( $item['description'] != '' ) {
+                $items[$iid]['synopsis'] .= '<br/><br/>' . $item['description'];
+            }
         }
 
         $page['blocks'][] = array('type'=>'imagelist', 'base_url'=>$base_url, 'image_width'=>300, 'noimage'=>'yes', 'list'=>$items);

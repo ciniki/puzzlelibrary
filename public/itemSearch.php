@@ -50,9 +50,8 @@ function ciniki_puzzlelibrary_itemSearch($ciniki) {
         . "ciniki_puzzlelibrary_items.pieces, "
         . "ciniki_puzzlelibrary_items.length, "
         . "ciniki_puzzlelibrary_items.width, "
-        . "ciniki_puzzlelibrary_items.difficulty, "
-        . "ciniki_puzzlelibrary_items.owner_customer_id, "
-        . "ciniki_puzzlelibrary_items.current_customer_id, "
+        . "ciniki_puzzlelibrary_items.owner, "
+        . "ciniki_puzzlelibrary_items.holder, "
         . "ciniki_puzzlelibrary_items.paid_amount, "
         . "ciniki_puzzlelibrary_items.unit_amount "
         . "FROM ciniki_puzzlelibrary_items "
@@ -60,6 +59,10 @@ function ciniki_puzzlelibrary_itemSearch($ciniki) {
         . "AND ("
             . "name LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
             . "OR name LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR owner LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR owner LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR holder LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR holder LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
         . ") "
         . "";
     if( isset($args['limit']) && is_numeric($args['limit']) && $args['limit'] > 0 ) {
@@ -70,7 +73,7 @@ function ciniki_puzzlelibrary_itemSearch($ciniki) {
     ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
     $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
         array('container'=>'items', 'fname'=>'id', 
-            'fields'=>array('id', 'name', 'permalink', 'status', 'flags', 'pieces', 'length', 'width', 'difficulty', 'owner_customer_id', 'current_customer_id', 'paid_amount', 'unit_amount')),
+            'fields'=>array('id', 'name', 'permalink', 'status', 'flags', 'pieces', 'length', 'width', 'owner', 'holder', 'paid_amount', 'unit_amount')),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;

@@ -6,8 +6,12 @@ function ciniki_puzzlelibrary_main() {
     // The panel to list the item
     //
     this.menu = new M.panel('item', 'ciniki_puzzlelibrary_main', 'menu', 'mc', 'large narrowaside', 'sectioned', 'ciniki.puzzlelibrary.main.menu');
+    this.menu.status = '';
     this.menu.category = '';
+    this.menu.collection = '';
     this.menu.brand = '';
+    this.menu.owner = '';
+    this.menu.holder = '';
     this.menu.data = {};
     this.menu.nplist = [];
     this.menu.sections = {
@@ -16,12 +20,53 @@ function ciniki_puzzlelibrary_main() {
             'noData':'No categories',
             'cellClasses':['', 'alignright'],
             }, */
+        'tabs':{'label':'', 'type':'menutabs', 'selected':'categories', 'tabs':{
+            'status':{'label':'Status', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("status");'},
+            'categories':{'label':'Categories', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("categories");'},
+            'collections':{'label':'Collections', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("collections");'},
+            'brands':{'label':'Brands', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("brands");'},
+            'artists':{'label':'Artists', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("artists");'},
+            'owners':{'label':'Owners', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("owners");'},
+            'holders':{'label':'Holders', 'fn':'M.ciniki_puzzlelibrary_main.menu.switchTab("holders");'},
+            }},
+        'status':{'label':'Status', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'status' ? 'yes' : 'no'; },
+            'noData':'No statuses',
+            'cellClasses':['', 'alignright'],
+            }, 
+        'flags':{'label':'Flags', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'status' ? 'yes' : 'no'; },
+            'noData':'No flags',
+            'cellClasses':['', 'alignright'],
+            }, 
         'categories':{'label':'Categories', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'categories' ? 'yes' : 'no'; },
             'noData':'No categories',
             'cellClasses':['', 'alignright'],
             }, 
+        'collections':{'label':'Collections', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'collections' ? 'yes' : 'no'; },
+            'noData':'No collections',
+            'cellClasses':['', 'alignright'],
+            }, 
         'brands':{'label':'Brands', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'brands' ? 'yes' : 'no'; },
             'noData':'No brands',
+            'cellClasses':['', 'alignright'],
+            }, 
+        'artists':{'label':'Artists', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'artists' ? 'yes' : 'no'; },
+            'noData':'No artists',
+            'cellClasses':['', 'alignright'],
+            }, 
+        'owners':{'label':'Owners', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'owners' ? 'yes' : 'no'; },
+            'noData':'No owners',
+            'cellClasses':['', 'alignright'],
+            }, 
+        'holders':{'label':'Holders', 'type':'simplegrid', 'aside':'yes', 'num_cols':1,
+            'visible':function() { return M.ciniki_puzzlelibrary_main.menu.sections.tabs.selected == 'holders' ? 'yes' : 'no'; },
+            'noData':'No holders',
             'cellClasses':['', 'alignright'],
             }, 
         'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':1,
@@ -53,16 +98,31 @@ function ciniki_puzzlelibrary_main() {
         return 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',\'' + d.id + '\');';
     }
     this.menu.rowClass = function(s, i, d) {
-        if( s == 'categories' && this.category == d.permalink ) {
+        if( s == 'status' && this.status == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'flags' && this.status == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'categories' && this.category == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'collections' && this.collection == d.permalink ) {
             return 'highlight';
         } else if( s == 'brands' && this.brand == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'artists' && this.artist == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'owners' && this.owner == d.permalink ) {
+            return 'highlight';
+        } else if( s == 'holders' && this.holder == d.permalink ) {
             return 'highlight';
         }
         return '';
     }
     this.menu.cellValue = function(s, i, j, d) {
-        if( s == 'categories' || s == 'brands' ) {
+        if( s == 'flags' || s == 'status' || s == 'categories' || s == 'collections' || s == 'brands' || s == 'artists' ) {
             return d.tag_name + '<span class="count">' + d.num_items + '</span>';
+        }
+        if( s == 'owners' || s == 'holders' ) {
+            return d.name + '<span class="count">' + d.num_items + '</span>';
         }
         if( s == 'items' ) {
             switch(j) {
@@ -75,28 +135,83 @@ function ciniki_puzzlelibrary_main() {
         }
     }
     this.menu.rowFn = function(s, i, d) {
+        if( s == 'status' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchStatus("' + M.eU(d.permalink) + '");';
+        }
+        if( s == 'flags' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchStatus("' + M.eU(d.permalink) + '");';
+        }
         if( s == 'categories' ) {
             return 'M.ciniki_puzzlelibrary_main.menu.switchCategory("' + M.eU(d.permalink) + '");';
         }
+        if( s == 'collections' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchCollection("' + M.eU(d.permalink) + '");';
+        }
         if( s == 'brands' ) {
             return 'M.ciniki_puzzlelibrary_main.menu.switchBrand("' + M.eU(d.permalink) + '");';
+        }
+        if( s == 'artists' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchArtist("' + M.eU(d.permalink) + '");';
+        }
+        if( s == 'owners' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchOwner("' + M.eU(d.permalink) + '");';
+        }
+        if( s == 'holders' ) {
+            return 'M.ciniki_puzzlelibrary_main.menu.switchHolder("' + M.eU(d.permalink) + '");';
         }
         if( s == 'items' ) {
             return 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',\'' + d.id + '\',M.ciniki_puzzlelibrary_main.item.nplist);';
         }
     }
+    this.menu.switchTab = function(t) {
+        this.sections.tabs.selected = t;
+        this.open();
+    }
+    this.menu.switchStatus = function(c) {
+        this.status = c;
+        this.open();
+    }
     this.menu.switchCategory = function(c) {
         this.category = c;
-        this.brand = '';
+        this.open();
+    }
+    this.menu.switchCollection = function(b) {
+        this.collection = b;
         this.open();
     }
     this.menu.switchBrand = function(b) {
         this.brand = b;
-        this.category = '';
+        this.open();
+    }
+    this.menu.switchArtist = function(b) {
+        this.artist = b;
+        this.open();
+    }
+    this.menu.switchOwner = function(b) {
+        this.owner = b;
+        this.open();
+    }
+    this.menu.switchHolder = function(b) {
+        this.holder = b;
         this.open();
     }
     this.menu.open = function(cb) {
-        M.api.getJSONCb('ciniki.puzzlelibrary.itemList', {'tnid':M.curTenantID, 'category':this.category, 'brand':this.brand}, function(rsp) {
+        var args = {'tnid':M.curTenantID, 'list':this.sections.tabs.selected};
+        if( this.sections.tabs.selected == 'status' ) { 
+            args['status'] = this.status;
+        } else if( this.sections.tabs.selected == 'categories' ) { 
+            args['category'] = this.category;
+        } else if( this.sections.tabs.selected == 'brands' ) { 
+            args['brand'] = this.brand;
+        } else if( this.sections.tabs.selected == 'artists' ) { 
+            args['artist'] = this.artist;
+        } else if( this.sections.tabs.selected == 'owners' ) { 
+            args['owner'] = this.owner;
+        } else if( this.sections.tabs.selected == 'holders' ) { 
+            args['holder'] = this.holder;
+        }
+        
+        M.api.getJSONCb('ciniki.puzzlelibrary.itemList', args, function(rsp) {
             if( rsp.stat != 'ok' ) {
                 M.api.err(rsp);
                 return false;
