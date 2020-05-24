@@ -69,8 +69,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_items AS items "
             . "LEFT JOIN ciniki_puzzlelibrary_tags AS brands ON ("
@@ -101,8 +103,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
                 . "items.difficulty, "
                 . "items.owner, "
                 . "items.holder, "
+                . "items.primary_image_id, "
                 . "items.paid_amount, "
                 . "items.unit_amount, "
+                . "items.last_updated, "
                 . "brands.tag_name AS brand "
                 . "FROM ciniki_puzzlelibrary_items AS items "
                 . "LEFT JOIN ciniki_puzzlelibrary_tags AS brands ON ("
@@ -127,8 +131,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_tags AS tags "
             . "LEFT JOIN ciniki_puzzlelibrary_items AS items ON ("
@@ -157,8 +163,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_tags AS tags "
             . "LEFT JOIN ciniki_puzzlelibrary_items AS items ON ("
@@ -187,8 +195,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_tags AS tags "
             . "LEFT JOIN ciniki_puzzlelibrary_items AS items ON ("
@@ -217,8 +227,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_tags AS tags "
             . "LEFT JOIN ciniki_puzzlelibrary_items AS items ON ("
@@ -247,8 +259,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_items AS items "
             . "LEFT JOIN ciniki_puzzlelibrary_tags AS brands ON ("
@@ -272,8 +286,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             . "items.difficulty, "
             . "items.owner, "
             . "items.holder, "
+            . "items.primary_image_id, "
             . "items.paid_amount, "
             . "items.unit_amount, "
+            . "items.last_updated, "
             . "brands.tag_name AS brand "
             . "FROM ciniki_puzzlelibrary_items AS items "
             . "LEFT JOIN ciniki_puzzlelibrary_tags AS brands ON ("
@@ -318,9 +334,10 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
             array('container'=>'items', 'fname'=>'id', 
                 'fields'=>array('id', 'name', 'permalink', 'brand', 'status', 'status_text', 'flags', 'pieces', 
-                    'length', 'width', 'difficulty', 'owner', 'holder', 'paid_amount', 'unit_amount'),
+                    'length', 'width', 'difficulty', 'owner', 'holder', 'primary_image_id', 'paid_amount', 'unit_amount', 'last_updated'),
                 'maps'=>array('status_text'=>$maps['item']['status']),
                 'dlists'=>array('brand'=>','),
+                'utctots'=>array('last_updated'),
                 ),
             ));
         if( $rc['stat'] != 'ok' ) {
@@ -328,6 +345,7 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         }
         if( isset($rc['items']) ) {
             $items = $rc['items'];
+            ciniki_core_loadMethod($ciniki, 'ciniki', 'images', 'hooks', 'loadThumbnail');
             foreach($items as $iid => $item) {
                 $item_ids[] = $item['id'];
                 $items[$iid]['length_width'] = (int)($item['length']/10) . 'x' . (int)($item['width']/10);
@@ -337,6 +355,17 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
                 }
                 if( ($item['flags']&0x02) == 0x02 ) {
                     $items[$iid]['flags_text'] .= ($items[$iid]['flags_text'] != '' ? ', ' : '') . 'Loaner';
+                }
+                if( isset($item['primary_image_id']) && $item['primary_image_id'] > 0 ) {
+                    $rc = ciniki_images_hooks_loadThumbnail($ciniki, $args['tnid'], array(
+                        'image_id' => $item['primary_image_id'], 
+                        'maxlength' => 150, 
+                        'last_updated' => $item['last_updated'],
+                        ));                
+                    if( $rc['stat'] != 'ok' ) {
+                        return $rc;
+                    }
+                    $items[$iid]['image'] = 'data:image/jpg;base64,' . base64_encode($rc['image']);
                 }
             }
         }

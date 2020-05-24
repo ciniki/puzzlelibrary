@@ -69,16 +69,16 @@ function ciniki_puzzlelibrary_main() {
             'noData':'No holders',
             'cellClasses':['', 'alignright'],
             }, 
-        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':1,
-            'cellClasses':[''],
+        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':3,
+            'cellClasses':['thumbnail', 'Brand', 'Title'],
             'hint':'Search item',
             'noData':'No item found',
             },
-        'items':{'label':'Items', 'type':'simplegrid', 'num_cols':5,
-            'headerValues':['Brand', 'Title', 'Pieces/Size', 'Status', 'Location'],
-            'cellClasses':['', '', 'multiline', 'multiline', 'multiline'],
+        'items':{'label':'Items', 'type':'simplegrid', 'num_cols':6,
+            'headerValues':['Image', 'Brand', 'Title', 'Pieces/Size', 'Status', 'Location'],
+            'cellClasses':['thumbnail', '', '', 'multiline', 'multiline', 'multiline'],
             'sortable':'yes',
-            'sortTypes':['text', 'text', 'number', 'text', 'text'],
+            'sortTypes':['', 'text', 'text', 'number', 'text', 'text'],
             'noData':'No item',
             'addTxt':'Add Item',
             'addFn':'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',0,null);'
@@ -92,7 +92,16 @@ function ciniki_puzzlelibrary_main() {
         }
     }
     this.menu.liveSearchResultValue = function(s, f, i, j, d) {
-        return d.name;
+        switch(j) {
+            case 0:
+                if( d.primary_image_id > 0 && d.image != '' ) {
+                    return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+                }
+                return '<img width="150px" height="150px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
+                
+            case 1: return d.brand;
+            case 2: return d.name;
+        }
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
         return 'M.ciniki_puzzlelibrary_main.item.open(\'M.ciniki_puzzlelibrary_main.menu.open();\',\'' + d.id + '\');';
@@ -124,13 +133,27 @@ function ciniki_puzzlelibrary_main() {
         if( s == 'owners' || s == 'holders' ) {
             return d.name + '<span class="count">' + d.num_items + '</span>';
         }
+        if( s == 'items' && j == 0 ) {
+            if( d.primary_image_id > 0 && d.image != '' ) {
+                return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+            } else {
+
+            }
+        }
         if( s == 'items' ) {
             switch(j) {
-                case 0: return d.brand;
-                case 1: return d.name;
-                case 2: return '<span class="maintext">' + d.pieces + '</span><span class="subtext">' + d.length_width + '</span>';
-                case 3: return '<span class="maintext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + '</span><span class="subtext">' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + '</span>';
-                case 4: return '<span class="maintext">' + d.status_text + '</span><span class="subtext">' + d.holder + '</span>';
+                case 0:
+                    if( d.primary_image_id > 0 && d.image != '' ) {
+                        return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+                    }
+                    return '<img width="150px" height="150px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
+                    
+                case 1: return d.brand;
+                case 2: return d.name;
+                case 3: return '<span class="maintext">' + d.pieces + '</span><span class="subtext">' + d.length_width + '</span>';
+                case 4: return '<span class="maintext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + '</span><span class="subtext">' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + '</span>';
+                case 5: return '<span class="maintext">' + d.status_text + '</span><span class="subtext">' + d.holder + '</span>'
+                    + (d.status == 40 ? '<button onclick="event.stopPropagation(); M.ciniki_puzzlelibrary_main.menu.returnItem(' + d.id + ');">Returned</button>': '');
             }
         }
     }
@@ -195,6 +218,15 @@ function ciniki_puzzlelibrary_main() {
         this.holder = b;
         this.open();
     }
+    this.menu.returnItem = function(id) {
+        M.api.getJSONCb('ciniki.puzzlelibrary.itemAction', {'tnid':M.curTenantID, 'action':'returned', 'item_id':id}, function(rsp) {
+            if( rsp.stat != 'ok' ) {
+                M.api.err(rsp);
+                return false;
+            }
+            M.ciniki_puzzlelibrary_main.menu.open();
+        });
+    }
     this.menu.open = function(cb) {
         var args = {'tnid':M.curTenantID, 'list':this.sections.tabs.selected};
         if( this.sections.tabs.selected == 'status' ) { 
@@ -238,12 +270,12 @@ function ciniki_puzzlelibrary_main() {
             'name':{'label':'Name', 'required':'yes', 'type':'text'},
             'status':{'label':'Status', 'type':'toggle', 'toggles':{'20':'In Library', '40':'On Loan', '70':'Lost', '80':'Sold', '90':'Archived'}},
             'flags':{'label':'Options', 'type':'flags', 'flags':{'1':{'name':'Visible'}, '2':{'name':'Loaner'}}},
-            'pieces':{'label':'Pieces', 'required':'yes', 'type':'text', 'size':'small'},
-            'length':{'label':'Length (mm)', 'required':'yes', 'type':'text', 'size':'small'},
-            'width':{'label':'Width (mm)', 'required':'yes', 'type':'text', 'size':'small'},
+            'pieces':{'label':'Pieces', 'required':'yes', 'type':'text', 'size':'small', 'livesearch':'yes', 'livesearchempty':'yes'},
+            'length':{'label':'Length (mm)', 'required':'yes', 'type':'text', 'size':'small', 'livesearch':'yes', 'livesearchempty':'yes'},
+            'width':{'label':'Width (mm)', 'required':'yes', 'type':'text', 'size':'small', 'livesearch':'yes', 'livesearchempty':'yes'},
 //            'difficulty':{'label':'Difficulty', 'type':'text'},
-            'owner':{'label':'Owner', 'type':'text'},
-            'holder':{'label':'Current Holder', 'type':'text'},
+            'owner':{'label':'Owner', 'type':'text', 'livesearch':'yes', 'livesearchempty':'yes'},
+            'holder':{'label':'Current Holder', 'type':'text', 'livesearch':'yes', 'livesearchempty':'yes'},
             'paid_amount':{'label':'Amount Paid', 'type':'text', 'size':'small'},
             'unit_amount':{'label':'Sold Price', 'type':'text', 'size':'small'},
             }},
@@ -289,6 +321,30 @@ function ciniki_puzzlelibrary_main() {
     this.item.fieldHistoryArgs = function(s, i) {
         return {'method':'ciniki.puzzlelibrary.itemHistory', 'args':{'tnid':M.curTenantID, 'item_id':this.item_id, 'field':i}};
     }
+    this.item.liveSearchCb = function(s, i, value) {
+        if( i == 'owner' || i == 'holder' || i == 'pieces' || i == 'length' || i == 'width' ) {
+            M.api.getJSONBgCb('ciniki.puzzlelibrary.searchField', 
+                {'tnid':M.curTenantID, 'field':i, 'start_needle':value, 'limit':15},
+                function(rsp) {
+                    M.ciniki_puzzlelibrary_main.item.liveSearchShow(s, i, M.gE(M.ciniki_puzzlelibrary_main.item.panelUID + '_' + i), rsp.results);
+                });
+        }
+    };
+    this.item.liveSearchResultValue = function(s, f, i, j, d) {
+        if( (f == 'owner' || f == 'holder' || f == 'pieces' || f == 'length' || f == 'width' ) && d != null ) { 
+            return d.name;
+        }
+        return '';
+    };
+    this.item.liveSearchResultRowFn = function(s, f, i, j, d) {
+        if( (f == 'owner' || f == 'holder' || f == 'pieces' || f == 'length' || f == 'width') && d != null ) {
+            return 'M.ciniki_puzzlelibrary_main.item.updateField(\'' + s + '\',\'' + f + '\',\'' + escape(d.name) + '\');';
+        }
+    };
+    this.item.updateField = function(s, fid, result) {
+        M.gE(this.panelUID + '_' + fid).value = unescape(result);
+        this.removeLiveSearch(s, fid);
+    };
     this.item.open = function(cb, iid, list) {
         if( iid != null ) { this.item_id = iid; }
         if( list != null ) { this.nplist = list; }

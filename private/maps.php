@@ -17,7 +17,7 @@ function ciniki_puzzlelibrary_maps(&$ciniki) {
     $maps = array();
     $maps['item'] = array('status'=>array(
         '20'=>'In Library',
-        '40'=>'On load',
+        '40'=>'On Loan',
         '70'=>'Lost',
         '80'=>'Sold',
         '90'=>'Archived',

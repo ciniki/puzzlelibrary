@@ -272,7 +272,6 @@ function ciniki_puzzlelibrary_web_processRequest(&$ciniki, $settings, $tnid, $ar
                 . "AND items.pieces = '" . ciniki_core_dbQuote($ciniki, $size_permalink) . "' "
                 . "AND items.primary_image_id > 0 "
                 . "ORDER BY items.name "
-                . "LIMIT 20 "
                 . "";
         } elseif( $tag_type != 0 ) {
             $strsql = "SELECT items.id, "
