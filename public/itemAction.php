@@ -18,6 +18,7 @@ function ciniki_puzzlelibrary_itemAction(&$ciniki) {
         'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'item_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Item'),
         'action'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Action'),
+        'holder'=>array('required'=>'no', 'blank'=>'no', 'name'=>'Holder'),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;
@@ -83,6 +84,21 @@ function ciniki_puzzlelibrary_itemAction(&$ciniki) {
         return $rc;
     }
 
+
+    if( $args['action'] == 'loan' && isset($args['holder']) ) {
+        //
+        // Update the Item in the database
+        //
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectUpdate');
+        $rc = ciniki_core_objectUpdate($ciniki, $args['tnid'], 'ciniki.puzzlelibrary.item', $args['item_id'], array(
+            'status' => 40,
+            'holder' => $args['holder'],
+            ), 0x04);
+        if( $rc['stat'] != 'ok' ) {
+            ciniki_core_dbTransactionRollback($ciniki, 'ciniki.puzzlelibrary');
+            return $rc;
+        }
+    }
 
     if( $args['action'] == 'returned' ) {
         //

@@ -38,26 +38,44 @@ function ciniki_puzzlelibrary_itemSearch($ciniki) {
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
+        
+    //
+    // Load maps
+    //
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'puzzlelibrary', 'private', 'maps');
+    $rc = ciniki_puzzlelibrary_maps($ciniki);
+    if( $rc['stat'] != 'ok' ) {
+        return $rc;
+    }
+    $maps = $rc['maps'];
 
     //
     // Get the list of items
     //
-    $strsql = "SELECT ciniki_puzzlelibrary_items.id, "
-        . "ciniki_puzzlelibrary_items.name, "
-        . "ciniki_puzzlelibrary_items.permalink, "
-        . "ciniki_puzzlelibrary_items.status, "
-        . "ciniki_puzzlelibrary_items.flags, "
-        . "ciniki_puzzlelibrary_items.pieces, "
-        . "ciniki_puzzlelibrary_items.length, "
-        . "ciniki_puzzlelibrary_items.width, "
-        . "ciniki_puzzlelibrary_items.owner, "
-        . "ciniki_puzzlelibrary_items.holder, "
-        . "ciniki_puzzlelibrary_items.primary_image_id, "
-        . "ciniki_puzzlelibrary_items.paid_amount, "
-        . "ciniki_puzzlelibrary_items.unit_amount, "
-        . "ciniki_puzzlelibrary_items.last_updated "
-        . "FROM ciniki_puzzlelibrary_items "
-        . "WHERE ciniki_puzzlelibrary_items.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+    $strsql = "SELECT items.id, "
+        . "items.name, "
+        . "items.permalink, "
+        . "items.status, "
+        . "items.status AS status_text, "
+        . "items.flags, "
+        . "items.pieces, "
+        . "items.length, "
+        . "items.width, "
+        . "items.owner, "
+        . "items.holder, "
+        . "items.primary_image_id, "
+        . "items.paid_amount, "
+        . "items.unit_amount, "
+        . "items.last_updated, "
+        . "history.new_value AS prev_holders "
+        . "FROM ciniki_puzzlelibrary_items AS items "
+        . "LEFT JOIN ciniki_puzzlelibrary_history AS history ON ("
+            . "history.table_name = 'ciniki_puzzlelibrary_items' "
+            . "AND items.id = history.table_key "
+            . "AND history.table_field = 'holder' "
+            . "AND items.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+            . ") "
+        . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
         . "AND ("
             . "name LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
             . "OR name LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
@@ -66,17 +84,21 @@ function ciniki_puzzlelibrary_itemSearch($ciniki) {
             . "OR holder LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
             . "OR holder LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
         . ") "
-        . "";
+        . "ORDER BY name ";
     if( isset($args['limit']) && is_numeric($args['limit']) && $args['limit'] > 0 ) {
         $strsql .= "LIMIT " . ciniki_core_dbQuote($ciniki, $args['limit']) . " ";
     } else {
-        $strsql .= "LIMIT 25 ";
+        $strsql .= "LIMIT 35 ";
     }
     ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
     $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
         array('container'=>'items', 'fname'=>'id', 
-            'fields'=>array('id', 'name', 'permalink', 'status', 'flags', 'pieces', 'length', 'width', 'owner', 'holder', 
-                'primary_image_id', 'paid_amount', 'unit_amount', 'last_updated')),
+            'fields'=>array('id', 'name', 'permalink', 'status', 'status_text', 'flags', 'pieces', 'length', 'width', 'owner', 'holder', 
+                'primary_image_id', 'paid_amount', 'unit_amount', 'last_updated', 'prev_holders',
+                ),
+            'maps'=>array('status_text'=>$maps['item']['status']),
+            'dlists'=>array('prev_holders'=>', '),
+            ),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;

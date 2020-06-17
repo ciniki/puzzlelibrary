@@ -69,8 +69,9 @@ function ciniki_puzzlelibrary_main() {
             'noData':'No holders',
             'cellClasses':['', 'alignright'],
             }, 
-        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':3,
-            'cellClasses':['thumbnail', 'Brand', 'Title'],
+        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':5,
+            'headerValues':['Image', 'Title', 'Status', 'Current Holder'],
+            'cellClasses':['Image', 'Title', 'Status', 'Current Holder'],
             'hint':'Search item',
             'noData':'No item found',
             },
@@ -99,8 +100,14 @@ function ciniki_puzzlelibrary_main() {
                 }
                 return '<img width="150px" height="150px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
                 
-            case 1: return d.brand;
-            case 2: return d.name;
+            case 1: return d.name;
+            case 2: return d.status_text;
+            case 3: return d.prev_holders.replace(/,/g, '<br/>');
+            case 4: 
+                if( d.status == 20 && this.holder != '' && this.sections.tabs.selected == 'holders' ) {
+                    return d.holder + '<br/><button onclick="event.stopPropagation(); M.ciniki_puzzlelibrary_main.menu.loanItem(' + d.id + ');">Loan to ' + unescape(this.holder) + '</button>';
+                }
+                return d.holder;
         }
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
@@ -217,6 +224,15 @@ function ciniki_puzzlelibrary_main() {
     this.menu.switchHolder = function(b) {
         this.holder = b;
         this.open();
+    }
+    this.menu.loanItem = function(id) {
+        M.api.getJSONCb('ciniki.puzzlelibrary.itemAction', {'tnid':M.curTenantID, 'action':'loan', 'item_id':id, 'holder':this.holder}, function(rsp) {
+            if( rsp.stat != 'ok' ) {
+                M.api.err(rsp);
+                return false;
+            }
+            M.ciniki_puzzlelibrary_main.menu.open();
+        });
     }
     this.menu.returnItem = function(id) {
         M.api.getJSONCb('ciniki.puzzlelibrary.itemAction', {'tnid':M.curTenantID, 'action':'returned', 'item_id':id}, function(rsp) {
