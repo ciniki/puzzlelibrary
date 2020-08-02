@@ -75,9 +75,9 @@ function ciniki_puzzlelibrary_main() {
             'hint':'Search item',
             'noData':'No item found',
             },
-        'items':{'label':'Items', 'type':'simplegrid', 'num_cols':6,
-            'headerValues':['Image', 'Brand', 'Title', 'Pieces/Size', 'Status', 'Location'],
-            'cellClasses':['thumbnail', '', '', 'multiline', 'multiline', 'multiline'],
+        'items':{'label':'Items', 'type':'simplegrid', 'num_cols':3,
+            'headerValues':['Image', 'Info','Location'],
+            'cellClasses':['thumbnail', 'multiline', 'multiline', 'multiline'],
             'sortable':'yes',
             'sortTypes':['', 'text', 'text', 'number', 'text', 'text'],
             'noData':'No item',
@@ -96,9 +96,9 @@ function ciniki_puzzlelibrary_main() {
         switch(j) {
             case 0:
                 if( d.primary_image_id > 0 && d.image != '' ) {
-                    return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+                    return '<img width="120px" height="120px" src=\'' + d.image + '\'/>';
                 }
-                return '<img width="150px" height="150px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
+                return '<img width="120px" height="120px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
                 
             case 1: return d.name;
             case 2: return d.status_text;
@@ -142,7 +142,7 @@ function ciniki_puzzlelibrary_main() {
         }
         if( s == 'items' && j == 0 ) {
             if( d.primary_image_id > 0 && d.image != '' ) {
-                return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+                return '<img width="120px" height="120px" src=\'' + d.image + '\'/>';
             } else {
 
             }
@@ -151,15 +151,17 @@ function ciniki_puzzlelibrary_main() {
             switch(j) {
                 case 0:
                     if( d.primary_image_id > 0 && d.image != '' ) {
-                        return '<img width="150px" height="150px" src=\'' + d.image + '\'/>';
+                        return '<img width="100px" height="100px" src=\'' + d.image + '\'/>';
                     }
-                    return '<img width="150px" height="150px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
+                    return '<img width="100px" height="100px" src=\'/ciniki-mods/core/ui/themes/default/img/noimage_75.jpg\' />';
                     
-                case 1: return d.brand;
-                case 2: return d.name;
-                case 3: return '<span class="maintext">' + d.pieces + '</span><span class="subtext">' + d.length_width + '</span>';
-                case 4: return '<span class="maintext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + '</span><span class="subtext">' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + '</span>';
-                case 5: return '<span class="maintext">' + d.status_text + '</span><span class="subtext">' + d.holder + '</span>'
+                case 1: return '<span class="maintext">' + d.name + '</span>'
+                    + '<span class="subtext">' + d.brand + '</span>'
+                    + '<span class="subtext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + ' [' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + ']</span>';
+//                    + '<span class="subtext">' + d.status_text + ' [' + d.holder + ']</span>'
+                    + '<span class="subsubtext">' + d.pieces + '</span>';
+//                case 2: return '<span class="maintext">' + ((d.flags&0x02) == 0x02 ? 'Loaner' : 'Private' ) + '</span><span class="subtext">' + ((d.flags&0x01) == 0x01 ? 'Visible' : '' ) + '</span>';
+                case 2: return '<span class="maintext">' + d.status_text + '</span><span class="subtext">' + d.holder + '</span>'
                     + (d.status == 40 ? '<button onclick="event.stopPropagation(); M.ciniki_puzzlelibrary_main.menu.returnItem(' + d.id + ');">Returned</button>': '');
             }
         }

@@ -90,33 +90,8 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
             $strsql .= "AND (items.flags&0x02) = 0x02 ";
         } elseif( $args['status'] == 'private' ) {
             $strsql .= "AND (items.flags&0x02) = 0 ";
-        } elseif( is_int($args['status']) ) {
-            $strsql = "SELECT items.id, "
-                . "items.name, "
-                . "items.permalink, "
-                . "items.status, "
-                . "items.status AS status_text, "
-                . "items.flags, "
-                . "items.pieces, "
-                . "items.length, "
-                . "items.width, "
-                . "items.difficulty, "
-                . "items.owner, "
-                . "items.holder, "
-                . "items.primary_image_id, "
-                . "items.paid_amount, "
-                . "items.unit_amount, "
-                . "items.last_updated, "
-                . "brands.tag_name AS brand "
-                . "FROM ciniki_puzzlelibrary_items AS items "
-                . "LEFT JOIN ciniki_puzzlelibrary_tags AS brands ON ("
-                    . "items.id = brands.item_id "
-                    . "AND brands.tag_type = 50 "
-                    . "AND brands.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
-                    . ") "
-                . "WHERE items.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
-                . "AND items.status = '" . ciniki_core_dbQuote($ciniki, $args['status']) . "' "
-                . "";
+        } elseif( is_numeric($args['status']) ) {
+            $strsql .= "AND items.status = '" . ciniki_core_dbQuote($ciniki, $args['status']) . "' ";
         }
     } elseif( $args['list'] == 'categories' && isset($args['category']) && $args['category'] != '' ) {
         $strsql = "SELECT items.id, "
@@ -394,7 +369,7 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         $statuslist = isset($rc['statuslist']) ? $rc['statuslist'] : array();
         $rsp['status'] = array(
             array('tag_name'=>'In Library', 'permalink'=>20, 'num_items'=>(isset($statuslist[20]) ? $statuslist[20]['num_items'] : 0)),
-            array('tag_name'=>'On Load', 'permalink'=>40, 'num_items'=>(isset($statuslist[40]) ? $statuslist[40]['num_items'] : 0)),
+            array('tag_name'=>'On Loan', 'permalink'=>40, 'num_items'=>(isset($statuslist[40]) ? $statuslist[40]['num_items'] : 0)),
             array('tag_name'=>'Lost', 'permalink'=>70, 'num_items'=>(isset($statuslist[70]) ? $statuslist[70]['num_items'] : 0)),
             array('tag_name'=>'Sold', 'permalink'=>80, 'num_items'=>(isset($statuslist[80]) ? $statuslist[80]['num_items'] : 0)),
             array('tag_name'=>'Archived', 'permalink'=>90, 'num_items'=>(isset($statuslist[90]) ? $statuslist[90]['num_items'] : 0)),

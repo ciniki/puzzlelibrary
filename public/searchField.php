@@ -89,9 +89,6 @@ function ciniki_puzzlelibrary_searchField($ciniki) {
     $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'ciniki.puzzlelibrary', array(
         array('container'=>'results', 'fname'=>'name', 'fields'=>array('name')),
         ));
-    if( $rc['stat'] != 'ok' ) {
-        return $rc;
-    }
-    return array('stat'=>'ok', 'results'=>$rc['results']);
+    return $rc;
 }
 ?>
