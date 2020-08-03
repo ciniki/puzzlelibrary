@@ -297,6 +297,15 @@ function ciniki_puzzlelibrary_main() {
             'paid_amount':{'label':'Amount Paid', 'type':'text', 'size':'small'},
             'unit_amount':{'label':'Sold Price', 'type':'text', 'size':'small'},
             }},
+        '_primary_image_id':{'label':'Image', 'type':'imageform', 'fields':{
+            'primary_image_id':{'label':'', 'type':'image_id', 'hidelabel':'yes', 'controls':'all', 'history':'no',
+                'addDropImage':function(iid) {
+                    M.ciniki_puzzlelibrary_main.item.setFieldValue('primary_image_id', iid);
+                    return true;
+                    },
+                'addDropImageRefresh':'',
+             },
+        }},
         '_categories':{'label':'Categories', 'aside':'yes', 
             'fields':{
                 'categories':{'label':'', 'hidelabel':'yes', 'type':'tags', 'tags':[], 'hint':'Enter a new category: '},
@@ -313,15 +322,6 @@ function ciniki_puzzlelibrary_main() {
             'fields':{
                 'artists':{'label':'', 'hidelabel':'yes', 'type':'tags', 'tags':[], 'hint':'Enter a new artist: '},
             }},
-        '_primary_image_id':{'label':'Image', 'type':'imageform', 'fields':{
-            'primary_image_id':{'label':'', 'type':'image_id', 'hidelabel':'yes', 'controls':'all', 'history':'no',
-                'addDropImage':function(iid) {
-                    M.ciniki_puzzlelibrary_main.item.setFieldValue('primary_image_id', iid);
-                    return true;
-                    },
-                'addDropImageRefresh':'',
-             },
-        }},
         '_description':{'label':'Description', 'fields':{
             'description':{'label':'', 'hidelabel':'yes', 'type':'textarea', 'size':'medium'},
             }},
