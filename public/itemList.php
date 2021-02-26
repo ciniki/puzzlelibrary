@@ -445,7 +445,8 @@ function ciniki_puzzlelibrary_itemList($ciniki) {
         if( $rc['stat'] != 'ok' ) {
             return array('stat'=>'fail', 'err'=>array('code'=>'ciniki.puzzlelibrary.21', 'msg'=>'Unable to load categories', 'err'=>$rc['err']));
         }
-        foreach($rc['types'] as $type) {
+        $types = isset($rc['types']) ? $rc['types'] : array();
+        foreach($types as $type) {
             if( $type['tag_type'] == 10 ) {
                 $rsp['categories'] = $type['categories'];
             } elseif( $type['tag_type'] == 20 ) {
